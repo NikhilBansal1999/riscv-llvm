@@ -23,6 +23,7 @@
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCInstBuilder.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/Support/TargetRegistry.h"
@@ -80,6 +81,11 @@ void RISCVAsmPrinter::EmitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   LowerRISCVMachineInstrToMCInst(MI, TmpInst, *this);
+  if(TmpInst.getOpcode() == RISCV::SW)
+  {
+    MCInst TempInst = MCInstBuilder(RISCV::AND).addReg(TmpInst.getOperand(0).getReg()).addReg(TmpInst.getOperand(0).getReg()).addReg(RISCV::X19);
+    EmitToStreamer(*OutStreamer, TempInst);
+  }
   EmitToStreamer(*OutStreamer, TmpInst);
 }
 

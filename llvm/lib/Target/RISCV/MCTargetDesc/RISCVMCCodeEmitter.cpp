@@ -115,6 +115,10 @@ void RISCVMCCodeEmitter::expandFunctionCall(const MCInst &MI, raw_ostream &OS,
   Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
   support::endian::write(OS, Binary, support::little);
 
+  TmpInst = MCInstBuilder(RISCV::AND).addReg(Ra).addReg(Ra).addReg(RISCV::X18);
+  Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
+  support::endian::write(OS, Binary, support::little);
+
   if (MI.getOpcode() == RISCV::PseudoTAIL)
     // Emit JALR X0, X6, 0
     TmpInst = MCInstBuilder(RISCV::JALR).addReg(RISCV::X0).addReg(Ra).addImm(0);
