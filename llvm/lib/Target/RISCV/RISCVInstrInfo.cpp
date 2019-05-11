@@ -436,8 +436,15 @@ unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
   case TargetOpcode::KILL:
   case TargetOpcode::DBG_VALUE:
     return 0;
+  case RISCV::SD:
   case RISCV::SW:
-    return 8;
+  case RISCV::SH:
+  case RISCV::SB:
+  case RISCV::LD:
+  case RISCV::LW:
+  case RISCV::LH:
+  case RISCV::LB:
+    return 16;
   case RISCV::PseudoCALL:
     return 12;
   case RISCV::PseudoTAIL:

@@ -53,11 +53,12 @@ BitVector RISCVRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   markSuperRegs(Reserved, RISCV::X3); // gp
   markSuperRegs(Reserved, RISCV::X4); // tp
   markSuperRegs(Reserved, RISCV::X8); // fp
-  markSuperRegs(Reserved, RISCV::X18);
-  markSuperRegs(Reserved, RISCV::X19);
-  markSuperRegs(Reserved, RISCV::X20);
-  markSuperRegs(Reserved, RISCV::X21);
-  markSuperRegs(Reserved, RISCV::X22);
+  markSuperRegs(Reserved, RISCV::X18);  // STORES CODE SEGMENT AND MASK
+  markSuperRegs(Reserved, RISCV::X19);  // STORES DATA SEGMENT AND MASK, These two stores bit patterns like 00..00111
+  markSuperRegs(Reserved, RISCV::X20);  // STORES CODE SEGMENT IDENTIFIER
+  markSuperRegs(Reserved, RISCV::X21);  // STORES DATA SEGMENT IDENTIFIER
+  markSuperRegs(Reserved, RISCV::X22);  // STORES JUMP ADDRESS
+  markSuperRegs(Reserved, RISCV::X23);  // STORES STORE/LOAD ADDRESS
   assert(checkAllSuperRegsMarked(Reserved));
   return Reserved;
 }

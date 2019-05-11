@@ -81,12 +81,24 @@ void RISCVAsmPrinter::EmitInstruction(const MachineInstr *MI) {
 
   MCInst TmpInst;
   LowerRISCVMachineInstrToMCInst(MI, TmpInst, *this);
-  if(TmpInst.getOpcode() == RISCV::SW)
+  if(TmpInst.getOpcode() == RISCV::SD || TmpInst.getOpcode() == RISCV::SW || TmpInst.getOpcode() == RISCV::SH || TmpInst.getOpcode() == RISCV::SB || TmpInst.getOpcode() == RISCV::LD || TmpInst.getOpcode() == RISCV::LW || TmpInst.getOpcode() == RISCV::LH || TmpInst.getOpcode() == RISCV::LB )
   {
-    MCInst TempInst = MCInstBuilder(RISCV::AND).addReg(TmpInst.getOperand(0).getReg()).addReg(TmpInst.getOperand(0).getReg()).addReg(RISCV::X19);
-    EmitToStreamer(*OutStreamer, TempInst);
+    MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X23).addReg(TmpInst.getOperand(1).getReg()).addImm(TmpInst.getOperand(2).getImm());
+    EmitToStreamer(*OutStreamer, TempInst1);
+
+    MCInst TempInst2 = MCInstBuilder(RISCV::AND).addReg(RISCV::X23).addReg(RISCV::X23).addReg(RISCV::X19);
+    EmitToStreamer(*OutStreamer, TempInst2);
+
+    MCInst TempInst3 = MCInstBuilder(RISCV::OR).addReg(RISCV::X23).addReg(RISCV::X23).addReg(RISCV::X21);
+    EmitToStreamer(*OutStreamer, TempInst3);
+
+    MCInst TempInst4 = MCInstBuilder(TmpInst.getOpcode()).addReg(TmpInst.getOperand(0).getReg()).addReg(RISCV::X23).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst4);
   }
-  EmitToStreamer(*OutStreamer, TmpInst);
+  else
+  {
+    EmitToStreamer(*OutStreamer, TmpInst);
+  }
 }
 
 bool RISCVAsmPrinter::PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,
