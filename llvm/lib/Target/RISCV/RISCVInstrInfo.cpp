@@ -444,11 +444,14 @@ unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
   case RISCV::LW:
   case RISCV::LH:
   case RISCV::LB:
-    return 16;
   case RISCV::PseudoCALL:
-    return 12;
   case RISCV::PseudoTAIL:
-    return 12;
+  case RISCV::JALR:
+  case RISCV::PseudoRET:
+  case RISCV::PseudoBRIND:
+  case RISCV::PseudoCALLIndirect:
+  case RISCV::PseudoTAILIndirect:
+    return 16;
   case TargetOpcode::INLINEASM: {
     const MachineFunction &MF = *MI.getParent()->getParent();
     const auto &TM = static_cast<const RISCVTargetMachine &>(MF.getTarget());

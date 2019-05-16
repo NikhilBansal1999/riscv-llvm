@@ -76,11 +76,74 @@ void RISCVAsmPrinter::EmitToStreamer(MCStreamer &S, const MCInst &Inst) {
 
 void RISCVAsmPrinter::EmitInstruction(const MachineInstr *MI) {
   // Do any auto-generated pseudo lowerings.
+  if(MI->getOpcode() == RISCV::PseudoCALLIndirect)
+  {
+    MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X22).addReg(MI->getOperand(0).getReg()).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst1);
+
+    MCInst TempInst2 = MCInstBuilder(RISCV::AND).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X18);
+    EmitToStreamer(*OutStreamer, TempInst2);
+
+    MCInst TempInst3 = MCInstBuilder(RISCV::OR).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X20);
+    EmitToStreamer(*OutStreamer, TempInst3);
+
+    MCInst TempInst4 = MCInstBuilder(RISCV::JALR).addReg(RISCV::X1).addReg(RISCV::X22).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst4);
+    return;
+  }
+
+  if(MI->getOpcode() == RISCV::PseudoBRIND || MI->getOpcode() == RISCV::PseudoTAILIndirect)
+  {
+    unsigned long immediate_val = (MI->getOpcode() == RISCV::PseudoBRIND)? MI->getOperand(1).getImm() : 0;
+    
+    MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X22).addReg(MI->getOperand(0).getReg()).addImm(immediate_val);
+    EmitToStreamer(*OutStreamer, TempInst1);
+
+    MCInst TempInst2 = MCInstBuilder(RISCV::AND).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X18);
+    EmitToStreamer(*OutStreamer, TempInst2);
+
+    MCInst TempInst3 = MCInstBuilder(RISCV::OR).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X20);
+    EmitToStreamer(*OutStreamer, TempInst3);
+
+    MCInst TempInst4 = MCInstBuilder(RISCV::JALR).addReg(RISCV::X0).addReg(RISCV::X22).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst4);
+    return;
+  }
+
+  if(MI->getOpcode() == RISCV::PseudoRET)
+  {
+    MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X22).addReg(RISCV::X1).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst1);
+
+    MCInst TempInst2 = MCInstBuilder(RISCV::AND).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X18);
+    EmitToStreamer(*OutStreamer, TempInst2);
+
+    MCInst TempInst3 = MCInstBuilder(RISCV::OR).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X20);
+    EmitToStreamer(*OutStreamer, TempInst3);
+
+    MCInst TempInst4 = MCInstBuilder(RISCV::JALR).addReg(RISCV::X0).addReg(RISCV::X22).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst4);
+    return;
+  }
   if (emitPseudoExpansionLowering(*OutStreamer, MI))
     return;
 
   MCInst TmpInst;
   LowerRISCVMachineInstrToMCInst(MI, TmpInst, *this);
+  if(TmpInst.getOpcode() == RISCV::JALR)
+  {
+    MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X22).addReg(TmpInst.getOperand(1).getReg()).addImm(TmpInst.getOperand(2).getImm());
+    EmitToStreamer(*OutStreamer, TempInst1);
+
+    MCInst TempInst2 = MCInstBuilder(RISCV::AND).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X18);
+    EmitToStreamer(*OutStreamer, TempInst2);
+
+    MCInst TempInst3 = MCInstBuilder(RISCV::OR).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X20);
+    EmitToStreamer(*OutStreamer, TempInst3);
+
+    MCInst TempInst4 = MCInstBuilder(TmpInst.getOpcode()).addReg(TmpInst.getOperand(0).getReg()).addReg(RISCV::X22).addImm(0);
+    EmitToStreamer(*OutStreamer, TempInst4);
+  }
   if(TmpInst.getOpcode() == RISCV::SD || TmpInst.getOpcode() == RISCV::SW || TmpInst.getOpcode() == RISCV::SH || TmpInst.getOpcode() == RISCV::SB || TmpInst.getOpcode() == RISCV::LD || TmpInst.getOpcode() == RISCV::LW || TmpInst.getOpcode() == RISCV::LH || TmpInst.getOpcode() == RISCV::LB )
   {
     MCInst TempInst1 = MCInstBuilder(RISCV::ADDI).addReg(RISCV::X23).addReg(TmpInst.getOperand(1).getReg()).addImm(TmpInst.getOperand(2).getImm());

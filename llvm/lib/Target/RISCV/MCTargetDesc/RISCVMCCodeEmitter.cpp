@@ -115,16 +115,20 @@ void RISCVMCCodeEmitter::expandFunctionCall(const MCInst &MI, raw_ostream &OS,
   Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
   support::endian::write(OS, Binary, support::little);
 
-  TmpInst = MCInstBuilder(RISCV::AND).addReg(Ra).addReg(Ra).addReg(RISCV::X18);
+  TmpInst = MCInstBuilder(RISCV::AND).addReg(RISCV::X22).addReg(Ra).addReg(RISCV::X18);
+  Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
+  support::endian::write(OS, Binary, support::little);
+
+  TmpInst = MCInstBuilder(RISCV::OR).addReg(RISCV::X22).addReg(RISCV::X22).addReg(RISCV::X20);
   Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
   support::endian::write(OS, Binary, support::little);
 
   if (MI.getOpcode() == RISCV::PseudoTAIL)
     // Emit JALR X0, X6, 0
-    TmpInst = MCInstBuilder(RISCV::JALR).addReg(RISCV::X0).addReg(Ra).addImm(0);
+    TmpInst = MCInstBuilder(RISCV::JALR).addReg(RISCV::X0).addReg(RISCV::X22).addImm(0);
   else
     // Emit JALR X1, X1, 0
-    TmpInst = MCInstBuilder(RISCV::JALR).addReg(Ra).addReg(Ra).addImm(0);
+    TmpInst = MCInstBuilder(RISCV::JALR).addReg(Ra).addReg(RISCV::X22).addImm(0);
   Binary = getBinaryCodeForInstr(TmpInst, Fixups, STI);
   support::endian::write(OS, Binary, support::little);
 }
